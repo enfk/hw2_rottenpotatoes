@@ -4,9 +4,12 @@
 %table#movies
   %thead
     %tr
-      %th Movie Title
-      %th Rating
-      %th Release Date
+      %th{:class => ("hilite" if sortby("title")) }
+        = sortable "title", "Movie Title"
+      %th{:class => ("hilite" if sortby("rating")) }
+        = sortable "rating"
+      %th{:class => ("hilite" if sortby("release_date")) }
+        = sortable "release_date", "Release Date"
       %th More Info
   %tbody
     - @movies.each do |movie|
