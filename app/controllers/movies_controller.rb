@@ -8,7 +8,9 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.order(sort_column + " " + sort_direction)
+    @all_ratings = Movie.all_ratings # ['G','PG','PG-13','R']
+    ratings = params[:ratings] ? params[:ratings].keys : @all_ratings
+    @movies = Movie.where(["rating IN (?)", ratings]).order(sort_column + " " + sort_direction)
   end
 
   def new
