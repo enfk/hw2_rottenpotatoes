@@ -4,8 +4,10 @@ module ApplicationHelper
     css_class = column == sort_column ? "current #{sort_direction}" : nil
     direction = column == sort_column && sort_direction == "asc" ? "desc" : "asc"
     path = {:sort => column, :direction => direction}
-    params[:ratings].each_key do |key|
-      path['ratings['+key+']'] = '1'
+    if params[:ratings]
+      params[:ratings].each_key do |key|
+        path['ratings['+key+']'] = '1'
+      end
     end
     link_to title, path, {:class => css_class}
   end

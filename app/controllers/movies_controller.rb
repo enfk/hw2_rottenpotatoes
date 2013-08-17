@@ -1,5 +1,5 @@
 class MoviesController < ApplicationController
-  helper_method :sort_column, :sort_direction
+  helper_method :sort_column, :sort_direction, :filter_ratings
 
   def show
     id = params[:id] # retrieve movie ID from URI route
@@ -9,8 +9,21 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings # ['G','PG','PG-13','R']
-    ratings = params[:ratings] ? params[:ratings].keys : @all_ratings
-    @movies = Movie.where(["rating IN (?)", ratings]).order(sort_column + " " + sort_direction)
+
+    logger.debug params
+    logger.debug session
+
+    if (params[:sort].nil? and session[:sort]) or
+       (params[:direction].nil? and session[:direction]) or
+       (params[:ratings].nil? and session[:ratings]) then
+      params[:sort] = session[:sort] if params[:sort].nil?
+      params[:direction] = session[:direction] if params[:direction].nil?
+      params[:ratings] = session[:ratings] if params[:ratings].nil?
+      redirect_to params
+    end
+
+    @movies = Movie.where(["rating IN (?)", filter_ratings])
+                   .order(sort_column + " " + sort_direction)
   end
 
   def new
@@ -44,10 +57,29 @@ class MoviesController < ApplicationController
   private
 
   def sort_column
-    Movie.column_names.include?(params[:sort]) ? params[:sort] : "title"
+    if Movie.column_names.include?(params[:sort])
+      session[:sort] = params[:sort]
+      params[:sort]
+    else
+      "title"
+    end
   end
 
   def sort_direction
-    %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
+    if %w[asc desc].include?(params[:direction])
+      session[:direction] = params[:direction]
+      params[:direction]
+    else
+      "asc"
+    end
+  end
+
+  def filter_ratings
+    if params[:ratings]
+      session[:ratings] = params[:ratings]
+      ratings = params[:ratings].keys
+    else
+      ratings = @all_ratings
+    end
   end
 end
